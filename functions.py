@@ -47,3 +47,11 @@ def to_image(array, label = True):
     array = np.array(array)
     start_idx = 1 if label else 0
     return array[start_idx:].reshape(28,28).astype(float)
+
+def convert_to_char(ascii_sum):
+    if ascii_sum > 122:
+        return chr(ascii_sum - 65)
+    return chr(ascii_sum)
+
+def convert_predictions_to_chars(predictions):
+    return [str(convert_to_char(65 + pred)) for pred in predictions]
