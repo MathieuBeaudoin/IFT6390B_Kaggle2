@@ -55,3 +55,49 @@ def convert_to_char(ascii_sum):
 
 def convert_predictions_to_chars(predictions):
     return [str(convert_to_char(65 + pred)) for pred in predictions]
+
+def wrangle_test_set(source):
+    data = pd.read_csv(source, index_col=0)
+    print(f"Test set shape: {data.shape}")
+    d = int(data.shape[1] / 2)
+    return data.index, np.array([
+        data.iloc[:, :d].to_numpy(),
+        data.iloc[:, d:].to_numpy()
+    ])
+
+def adapt_preds_to_expectations(test_sets,
+                                model):
+    ascii_values = np.array([
+        model.predict(
+            X = ts,
+            first_past_the_post = False
+        ) for ts in test_sets
+    ])
+    return pd.Series(
+        convert_predictions_to_chars(ascii_values.sum(0)),
+        index = test.index,
+        name = "label"
+    )
+
+def check_accuracy(model, 
+                   X_valid,
+                   labels_valid,
+                   approaches={
+                       "Single-vote": True,
+                       "Probabilistic-combination": False
+                   },
+                   verbose: bool = True,
+                   **kwargs):
+    accs = []
+    for _type, fptp in approaches.items():
+        preds = model.predict(
+            X_valid, 
+            first_past_the_post=fptp, 
+            **kwargs
+        )
+        description = f"{_type} accuracy:"
+        accs.append(acc := np.mean(preds == labels_valid))
+        if verbose:
+            print(f"{description.ljust(36)}{acc}")
+    return accs
+
