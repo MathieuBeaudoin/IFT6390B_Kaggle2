@@ -43,6 +43,16 @@ def import_data(file):
     df = reduce_mem_usage(df)
     return df
 
+def split_off_labels(df, y_col="label"):
+    _X = (
+        df
+        .drop(y_col, axis=1)
+        .to_numpy()
+        .astype(np.int16) # Downcast to save memory 
+    )
+    _y = df[y_col].to_numpy().astype(np.int8)
+    return _X, _y
+
 def to_image(array, label = True):
     array = np.array(array)
     start_idx = 1 if label else 0
@@ -56,9 +66,7 @@ def convert_to_char(ascii_sum):
 def convert_predictions_to_chars(predictions):
     return [str(convert_to_char(65 + pred)) for pred in predictions]
 
-def wrangle_test_set(source):
-    data = pd.read_csv(source, index_col=0)
-    print(f"Test set shape: {data.shape}")
+def wrangle_test_set(data):
     d = int(data.shape[1] / 2)
     return data.index, np.array([
         data.iloc[:, :d].to_numpy(),
