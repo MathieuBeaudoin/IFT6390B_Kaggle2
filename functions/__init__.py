@@ -63,8 +63,15 @@ def convert_to_char(ascii_sum):
         return chr(ascii_sum - 65)
     return chr(ascii_sum)
 
+def vectorized_char_converter(ascii_sums):
+    ascii_sums[ascii_sums > 122] -= 65
+    return np.vectorize(chr)(ascii_sums)
+
 def convert_predictions_to_chars(predictions):
     return [str(convert_to_char(65 + pred)) for pred in predictions]
+
+def vectorized_preds_to_chars(predictions):
+    return vectorized_char_converter(predictions + 65).astype(str)
 
 def wrangle_test_set(data):
     d = int(data.shape[1] / 2)
@@ -73,17 +80,16 @@ def wrangle_test_set(data):
         data.iloc[:, d:].to_numpy()
     ])
 
-def adapt_preds_to_expectations(test_sets,
-                                model):
-    ascii_values = np.array([
-        model.predict(
-            X = ts,
-            first_past_the_post = False
-        ) for ts in test_sets
-    ])
+def adapt_preds_to_expectations(test_sets, model, index):
+    ascii_values = np.array([model.predict(ts) for ts in test_sets])
+    preds_as_chars = vectorized_preds_to_chars(ascii_values.sum(0).astype(int))
+    if np.ndim(preds_as_chars) != 1:
+        print(f"Shapes of\n ascii_values: {ascii_values.shape}\n ",
+              f"preds_as_chars: {preds_as_chars.shape}")
+        raise ValueError("Wrong shapes!")
     return pd.Series(
-        convert_predictions_to_chars(ascii_values.sum(0)),
-        index = test.index,
+        preds_as_chars,
+        index = index,
         name = "label"
     )
 

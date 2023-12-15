@@ -74,5 +74,5 @@ class ConvolutionalNeuralNet():
             ]
         )
 
-    def predict(self, *args, **kwargs):
-        return self.model.predict(*args, **kwargs)
+    def predict(self, X, *args, **kwargs):
+        return self.model.predict(X)

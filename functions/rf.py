@@ -238,7 +238,7 @@ class RandomForestClassifier():
         return avg_probs
     
     def predict(self, X,
-                first_past_the_post: bool = True,
+                first_past_the_post: bool = False,
                 **kwargs):
         if first_past_the_post:
             tree_preds = np.sum([
